@@ -717,8 +717,11 @@ if __name__ == '__main__':
     bot_app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    # Start bot in thread
-    bot_thread = threading.Thread(target=bot_app.run_polling, daemon=True)
+    # Start bot in thread with asyncio
+    def run_bot():
+        asyncio.run(bot_app.run_polling())
+    
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     
     # Start cleanup task
