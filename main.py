@@ -12,6 +12,7 @@ import threading
 import sqlite3
 import cv2
 import numpy as np
+import asyncio
 from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
