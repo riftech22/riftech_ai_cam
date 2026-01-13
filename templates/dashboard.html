@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI CCTV Security</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .video-container {
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-stream {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .detection-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .detection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .detection-images {
+            display: flex;
+            gap: 5px;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+
+        .detection-image {
+            flex: 1;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .detection-image:hover {
+            opacity: 0.9;
+        }
+
+        .detection-info {
+            padding: 15px;
+        }
+
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .person-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .person-name.unknown {
+            color: #f44336;
+        }
+
+        .person-name.known {
+            color: #4CAF50;
+        }
+
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.known {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+
+        .status-badge.unknown {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .detection-meta {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .detection-meta div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detection-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 8px;
+            background: #ffebee;
+            color: #f44336;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ffcdd2;
+        }
+
+        .known-faces-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .known-face-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #f5f6fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .known-face-item .name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .known-face-item .count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>
+            <span>📹</span>
+            AI CCTV Security
+        </h1>
+        <div class="user-info">
+            <div class="status-indicator">LIVE</div>
+            <span>Selamat datang, {{ current_user.id }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Live Stream Section -->
+        <div class="section">
+            <h2>
+                <span>📡</span>
+                Live Stream CCTV
+            </h2>
+            <div class="video-container">
+                <img src="{{ url_for('stream') }}" alt="CCTV Stream" class="video-stream">
+                <div class="video-overlay">
+                    <span>📅 {{ now }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Snapshot Gallery Section -->
+        <div class="section">
+            <h2>
+                <span>📸</span>
+                Gallery Deteksi
+            </h2>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn {% if status_filter == 'all' %}active{% endif %}" 
+                        onclick="filterDetections('all')">
+                    Semua
+                </button>
+                <button class="filter-btn {% if status_filter == 'known' %}active{% endif %}" 
+                        onclick="filterDetections('known')">
+                    ✅ Dikenal
+                </button>
+                <button class="filter-btn {% if status_filter == 'unknown' %}active{% endif %}" 
+                        onclick="filterDetections('unknown')">
+                    ❓ Tidak Dikenal
+                </button>
+            </div>
+
+            {% if detections %}
+            <div class="gallery">
+                {% for detection in detections %}
+                <div class="detection-card" data-status="{{ detection.status }}">
+                    <div class="detection-images">
+                        <img src="{{ url_for('static', filename=detection.original_photo_path) }}" 
+                             alt="Original" 
+                             class="detection-image"
+                             onclick="openModal('{{ url_for('static', filename=detection.original_photo_path) }}')">
+                        <img src="{{ url_for('static', filename=detection.zoom_photo_path) }}" 
+                             alt="Zoomed" 
+                             class="detection-image"
+                             onclick="openModal('{{ url_for('static', filename=detection.zoom_photo_path) }}')">
+                    </div>
+                    <div class="detection-info">
+                        <div class="detection-header">
+                            <span class="person-name {{ detection.status }}">
+                                {{ detection.person_name }}
+                            </span>
+                            <span class="status-badge {{ detection.status }}">
+                                {{ 'Dikenal' if detection.status == 'known' else 'Tidak Dikenal' }}
+                            </span>
+                        </div>
+                        <div class="detection-meta">
+                            <div>
+                                <span>📅</span>
+                                {{ detection.timestamp[:10] }}
+                            </div>
+                            <div>
+                                <span>⏰</span>
+                                {{ detection.timestamp[11:19] }}
+                            </div>
+                            <div>
+                                <span>📍</span>
+                                {{ detection.camera_name }}
+                            </div>
+                        </div>
+                        <div class="detection-actions">
+                            <button class="delete-btn" onclick="deleteDetection({{ detection.id }})">
+                                🗑️ Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">📷</div>
+                <p>Belum ada deteksi yang tersimpan</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Known Faces Section -->
+        <div class="section">
+            <h2>
+                <span>👥</span>
+                Wajah yang Dikenal
+            </h2>
+            <div class="known-faces-list" id="known-faces-list">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal" onclick="closeModal()">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <img id="modalImage" src="" alt="Enlarged Image">
+        </div>
+    </div>
+
+    <script>
+        // Get current time
+        const now = new Date();
+        document.querySelector('.video-overlay span').textContent = '📅 ' + now.toLocaleString('id-ID');
+
+        // Filter detections
+        function filterDetections(status) {
+            window.location.href = '?status=' + status;
+        }
+
+        // Open image modal
+        function openModal(imageSrc) {
+            event.stopPropagation();
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        // Close image modal
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+
+        // Delete detection
+        function deleteDetection(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus deteksi ini?')) {
+                fetch(`/api/delete_detection/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal menghapus deteksi');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+            }
+        }
+
+        // Load known faces
+        function loadKnownFaces() {
+            fetch('/api/known_faces')
+                .then(response => response.json())
+                .then(faces => {
+                    const container = document.getElementById('known-faces-list');
+                    if (faces.length === 0) {
+                        container.innerHTML = '<p style="color: #999;">Belum ada wajah yang dikenal</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = faces.map(name => `
+                        <div class="known-face-item">
+                            <span class="name">👤 ${name}</span>
+                            <span class="count">1 foto</span>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading known faces:', error);
+                });
+        }
+
+        // Initialize
+        loadKnownFaces();
+
+        // Update time every second
+        setInterval(() => {
+            const now = new Date();
+            document.querySelector('.video-overlay span').textContent = '📅 ' + now.toLocaleString('id-ID');
+        }, 1000);
+    </script>
+</body>
+</html>

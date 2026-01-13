@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and generated files
+uploads/*
+!uploads/.gitkeep
+logs/*
+!logs/.gitkeep
+known_faces/*
+!known_faces/.gitkeep
+
+# Model files (large)
+*.pt
+*.pth
+*.onnx
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
